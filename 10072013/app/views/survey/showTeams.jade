@@ -1,0 +1,68 @@
+extends ../layout
+
+block content
+  script(src='lib/angular/angular.js')
+  script(src='js/controllers.js')
+
+  .jumbotron.subhead(style="padding-top: 80px")
+      .container
+          h2 Agile Teams
+  div(ng-app, style="padding-top: 20px")
+    div(ng-controller='TeamListCtrl')
+      .row.fluid
+        .container 
+          form.form-inline
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Team Name
+                input.input-small(type='text', placeholder='Team Name', ng-model='search.teamName')
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Disbanded
+                select.input-small(ng-model='search.disbanded')
+                  option(value='') All
+                  option(value='true') true
+                  option(value='false') false
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Business
+                select.input-small(ng-model='search.business')
+                  option(value='') All
+                  option(ng-repeat='bus in business') {{bus}}
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Sub-business
+                select.input-small(ng-model='search.subBusiness')
+                  option(value='') All
+                  option(ng-repeat='subBus in subBusiness') {{subBus}}
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Site
+                select.input-small(ng-model='search.site')
+                  option(value='') All
+                  option(ng-repeat='site in sites') {{site}}
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on By Name Or SSO
+                input.input-small(type='text', placeholder='Name Or SSO', ng-model='search.$')
+
+      .row-fluid   
+          .container
+            table.table.table-hover#searchObjResults
+              thead
+                tr 
+                  th(style="padding-right: 20px") Team 
+                  th(style="padding-right: 20px") Quarters
+                  th(style="padding-right: 20px") Business
+                  th(style="padding-right: 20px") Sub-business
+                  th(style="padding-right: 20px") Site
+                  th(style="padding-right: 20px") Scrum Master
+                  th(style="padding-right: 20px") Product Owner
+                  th(style="padding-right: 20px") Interaction Designer
+
+              tbody.teams
+                tr(ng-repeat='team in teams | filter: search | orderBy: orderProp')
+                  td 
+                    a(ng-href="/data/team/{{team.teamName}}") {{team.teamName}} 
+                  td
+                    p(ng-repeat='quarter in team.surveys') {{quarter.quarter}}
+                  td {{team.business}}
+                  td {{team.subBusiness}}
+                  td {{team.site}}
+                  td {{team.scrumMaster.last}}, {{team.scrumMaster.first}} | {{team.scrumMaster.SSO}}
+                  td {{team.productOwner.last}}, {{team.productOwner.first}} | {{team.productOwner.SSO}}
+                  td {{team.interactionDesigner.last}}, {{team.interactionDesigner.first}} | {{team.interactionDesigner.SSO}}

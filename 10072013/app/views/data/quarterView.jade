@@ -1,0 +1,499 @@
+extends ../layout 
+
+block content
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.core.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.key.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.effects.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.tooltips.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.dynamic.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.hbar.js')
+    script(type='text/javascript', src='/javascripts/excanvas.js')
+    style(type='text/css')
+        .width {
+            border: 1px solid green;
+            display: table-cell;
+            width: 100%;
+            }
+    script
+        window.onload = function ()
+            {
+            $.ajax({
+                url: '/JSON/allTeams',
+                success: function(data, textStatus, jqXHR){
+                    var res = jqXHR.responseText;
+                    var parsed = $.parseJSON(res).data;
+
+  
+                    function sumGenObjective(team){''
+                        var sum = 0;
+                        sum = countSum(team.team)
+                            + countSum(team.environment) 
+                            + countSum(team.informationRadiators)
+                            + countSum(team.process)
+                            + countSum(team.definitionOfReady)
+                            + countSum(team.definitionOfDone)
+                            + countSum(team.qualityMetrics)
+                            + countSum(team.continuousIntegration)
+                            + team.buildTime
+                            + team.hardeningSprints;
+                        return sum;
+                    }
+                    function sumGenSubjective(team){
+                        var sum = 0;
+                        for(var j = 0; j< team.length; j++){
+                            sum = team[j] + sum;
+                        }
+                        return sum;
+                    }
+                    function countSum(category){
+
+                        var sum = 0;
+                        for(var i = 0; i< category.length; i++){
+                            sum = category[i] + sum;
+                        }
+                        return sum;
+                    }                 
+                    function businessQuarterLocationArray (data, business, location, quarter, subBusiness){
+                        business[0] = "All Businesses";
+                        location[0] = "All Locations";
+                        subBusiness[0] = "All SubBusinesses"
+                        for(i=0; i<data.length; i++){
+                            if($.inArray(data[i].business, business) == -1){
+                                business[business.length] = data[i].business;
+                            }
+                            if($.inArray(data[i].site, location) == -1){
+                                location[location.length] = data[i].site;
+                            }
+                            if($.inArray(data[i].subBusiness, subBusiness) == -1){
+                                subBusiness[subBusiness.length] = data[i].subBusiness;
+                            }
+                            for(j=0; j<data[i].surveys.length; j++){
+                                if($.inArray(data[i].surveys[j].quarter, quarter) == -1){
+                                    quarter[quarter.length] = data[i].surveys[j].quarter;
+                                }
+                            }
+                        }
+
+                        for(i=0; i< quarter.length; i++){
+                            $("#quarterSelect").append("<option value='" + quarter[i] + "'>" + quarter[i] + "</option>");
+                        }
+                        for(i=0; i<business.length; i++){
+                            $("#businessSelect").append("<option value='" + business[i] + "'> " + business[i] + "</option>");
+                        }
+                        for(i=0; i<subBusiness.length; i++){
+                            $("#subBusinessSelect").append("<option value='" + subBusiness[i] + "'> " + subBusiness[i] + "</option>");
+                        }
+                        for(i=0; i<location.length; i++){
+                            $("#locationSelect").append("<option value='" + location[i] + "'> " + location[i] + "</option>");
+                        } 
+                    }
+                    function generateGraphObj(input, category, quarter, business, location, subBusiness){
+                        $("#objective").empty();
+                        teamArrayObj = [];
+                        graphArrayObj = [];
+                        var n =0;
+
+                        for (i = 0; i < input.length; i++) {
+                            for(j = 0; j < input[i].surveys.length; j++){
+                                if(input[i].surveys[j].quarter == quarter){
+                                    if(business == "All Businesses" && location == "All Locations" && subBusiness == "All SubBusinesses"){
+                                        teamArrayObj[n] = input[i].teamName;
+                                        graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                        n++;
+                                    } else if (business != "All Businesses" && location == "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].business == business){
+                                            teamArrayObj[n] = input[i].teamName;
+                                            graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                            n++;
+                                        }
+                                    } else if (business != "All Businesses" && location != "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].business == business && input[i].site == location){
+                                            teamArrayObj[n] = input[i].teamName;
+                                            graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                            n++;
+                                        }
+                                    } else if (business != "All Businesses" && location == "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].business == business && input[i].subBusiness == subBusiness){
+                                            teamArrayObj[n] = input[i].teamName;
+                                            graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                            n++;
+                                        }
+                                    } else if (business != "All Businesses" && location != "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].business == business  && input[i].site == location && input[i].subBusiness == subBusiness){
+                                            teamArrayObj[n] = input[i].teamName;
+                                            graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                            n++;
+                                        }
+                                    } else if (business == "All Businesses" && location != "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].site == location){
+                                            teamArrayObj[n] = input[i].teamName;
+                                            graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                            n++;
+                                        }
+                                    } else if (business == "All Businesses" && location == "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].subBusiness == subBusiness){
+                                            teamArrayObj[n] = input[i].teamName;
+                                            graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                            n++;
+                                        }
+                                    } else{
+                                        if(input[i].site == location  && input[i].site == location && input[i].subBusiness == subBusiness){
+                                            teamArrayObj[n] = input[i].teamName;
+                                            graphArrayObj[n] = countSum(input[i].surveys[j][category]);
+                                            n++;
+                                        }
+                                    }
+                                } 
+                            }
+                        }
+                        if(teamArrayObj.length < 4){
+                            $("#objective").append("<canvas id='objectiveHBar' class='span11' width='1000' height='"+"100"+"'> [No canvas support]</canvas>");
+
+                        } else {
+                            $("#objective").append("<canvas id='objectiveHBar' class='span11' width='1000' height='"+((teamArrayObj.length+1) * 30)+"'> [No canvas support]</canvas>");
+
+                        }
+
+                        var objectiveBar = new RGraph.HBar('objectiveHBar', graphArrayObj)
+                            .Set('colors', ['#35A0DA'])
+                            .Set('labels', teamArrayObj)
+                            .Set('ylabels.count', teamArrayObj.length)
+                            .Set('numyticks', teamArrayObj.length)
+                            .Set('background.grid.autofit.numhlines', teamArrayObj.length)
+                            .Set('background.grid.vlines', false)
+                            .Set('background.grid.border', false)
+                            .Set('hmargin', teamArrayObj.length)
+                            .Draw();
+                    }
+                    function generateGraphSub(input, category, quarter, business, location, subBusiness){
+                        $("#subjective").empty();
+                        teamArraySub = [];
+                        graphArraySub = [];
+                        var n =0;
+
+                        for (i = 0; i < input.length; i++) {
+                            for(j = 0; j < input[i].surveys.length; j++){
+                                if(input[i].surveys[j].quarter == quarter){
+                                    if(business == "All Businesses" && location == "All Locations" && subBusiness == "All SubBusinesses"){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                    } else if (business != "All Businesses" && location == "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].business == business){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                        }
+                                    } else if (business != "All Businesses" && location != "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].business == business && input[i].site == location){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                        }
+                                    } else if (business != "All Businesses" && location == "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].business == business && input[i].subBusiness == subBusiness){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                        }
+                                    } else if (business != "All Businesses" && location != "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].business == business  && input[i].site == location && input[i].subBusiness == subBusiness){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                        }
+                                    } else if (business == "All Businesses" && location != "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].site == location){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                        }
+                                    } else if (business == "All Businesses" && location == "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].subBusiness == subBusiness){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                        }
+                                    } else{
+                                        if(input[i].site == location  && input[i].site == location && input[i].subBusiness == subBusiness){
+                                            teamArraySub[n] = input[i].teamName;
+                                            graphArraySub[n] = input[i].surveys[j].subjective[category];
+                                            n++;
+                                        }
+                                    }
+                                } 
+                            }
+                        }
+
+                        if(teamArrayObj.length < 4){
+                            $("#subjective").append("<canvas id='subjectiveHBar' class='span11' width='1000' height='"+"100"+"'> [No canvas support]</canvas>");
+
+                        } else {
+                            $("#subjective").append("<canvas id='subjectiveHBar' class='span11' width='1000' height='"+((teamArrayObj.length+1) * 30)+"'> [No canvas support]</canvas>");
+
+                        }
+
+                        var subjectiveBar = new RGraph.HBar('subjectiveHBar', graphArraySub)
+                        .Set('colors', ['green'])
+                        .Set('labels', teamArraySub)
+                        .Set('ylabels.count', teamArraySub.length)
+                        .Set('numyticks', teamArraySub.length)
+                        .Set('background.grid.autofit.numhlines', teamArraySub.length)
+                        .Set('background.grid.vlines', false)
+                        .Set('background.grid.border', false)
+                        .Set('hmargin', teamArraySub.length)
+                        .Draw();
+                    }
+                    function generateTableExecute(input, i, j){
+                        if(input[i].disbanded == true) {
+                            $('#quarterTableBody').append(
+                                "<tr class='error'><td><a href='/data/team/" + 
+                                    input[i].teamName + "'>" +
+                                    input[i].teamName +
+                                "</td><td>" + 
+                                    input[i].business + 
+                                "</td><td>" + 
+                                    input[i].subBusiness + 
+                                "</td><td>" + 
+                                    input[i].site +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].team) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].environment) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].informationRadiators) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].process) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].definitionOfReady) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].definitionOfDone) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].qualityMetrics) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].continuousIntegration) +
+                                "</td><td>" + 
+                                    input[i].surveys[j].buildTime +
+                                "</td><td>" + 
+                                    input[i].surveys[j].hardeningSprints +
+                                "</td><td>" + 
+                                    sumGenObjective(input[i].surveys[j]) +
+                                "</td><td>" + 
+                                    sumGenSubjective(input[i].surveys[j].subjective) +
+                                "</td></tr>"
+                                );
+                        } else {
+                            $('#quarterTableBody').append(
+                                "<tr><td><a href='/data/team/" + 
+                                    input[i].teamName + "'>" +
+                                    input[i].teamName +
+                                "</td><td>" + 
+                                    input[i].business + 
+                                "</td><td>" + 
+                                    input[i].subBusiness + 
+                                "</td><td>" + 
+                                    input[i].site +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].team) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].environment) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].informationRadiators) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].process) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].definitionOfReady) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].definitionOfDone) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].qualityMetrics) +
+                                "</td><td>" + 
+                                    countSum(input[i].surveys[j].continuousIntegration) +
+                                "</td><td>" + 
+                                    input[i].surveys[j].buildTime +
+                                "</td><td>" + 
+                                    input[i].surveys[j].hardeningSprints +
+                                "</td><td>" + 
+                                    sumGenObjective(input[i].surveys[j]) +
+                                "</td><td>" + 
+                                    sumGenSubjective(input[i].surveys[j].subjective) +
+                                "</td></tr>"
+                                );
+                        }
+                    }
+                    function generateTable(input, quarter, business, location, subBusiness){
+                        $("#quarterTableBody").empty();
+
+                        for (i = 0; i < input.length; i++) {
+                            for(j = 0; j < input[i].surveys.length; j++){
+                                if(input[i].surveys[j].quarter == quarter){
+                                    if(business == "All Businesses" && location == "All Locations" && subBusiness == "All SubBusinesses"){
+                                            generateTableExecute(input, i, j);
+                                    } else if (business != "All Businesses" && location == "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].business == business){
+                                            generateTableExecute(input, i, j);
+                                        }
+                                    } else if (business != "All Businesses" && location != "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].business == business && input[i].site == location){
+                                            generateTableExecute(input, i, j);
+                                        }
+                                    } else if (business != "All Businesses" && location == "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].business == business && input[i].subBusiness == subBusiness){
+                                            generateTableExecute(input, i, j);
+                                        }
+                                    } else if (business != "All Businesses" && location != "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].business == business  && input[i].site == location && input[i].subBusiness == subBusiness){
+                                            generateTableExecute(input, i, j);
+                                        }
+                                    } else if (business == "All Businesses" && location != "All Locations" && subBusiness == "All SubBusinesses"){
+                                        if(input[i].site == location){
+                                            generateTableExecute(input, i, j);
+                                        }
+                                    } else if (business == "All Businesses" && location == "All Locations" && subBusiness != "All SubBusinesses"){
+                                        if(input[i].subBusiness == subBusiness){
+                                            generateTableExecute(input, i, j);
+                                        }
+                                    } else{
+                                        if(input[i].site == location  && input[i].site == location && input[i].subBusiness == subBusiness){
+                                            generateTableExecute(input, i, j);
+                                        }
+                                    }
+                                } 
+                            }
+                        }
+
+
+                    }
+                    function generateGraphAndTable(){
+                        generateTable(parsed, $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+                        generateGraphObj(parsed, $("#categorySelectObj").val(),  $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+                        generateGraphSub(parsed, $("#categorySelectSub").val(), $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+                    }
+                    function initialize(){
+                        var businessArray = new Array();
+                        var subBusinessArray = new Array();
+                        var locationArray = new Array();
+                        var quarterArray = new Array();
+                        var teamArrayObj = new Array();
+                        var graphArrayObj = new Array();
+                        var graphArraySub = new Array();
+                        businessQuarterLocationArray(parsed, businessArray, locationArray, quarterArray, subBusinessArray);
+                        $("#objective").empty();
+                        generateTable(parsed, $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+                        generateGraphObj(parsed, $("#categorySelectObj").val(),  $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+                        generateGraphSub(parsed, $("#categorySelectSub").val(), $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+
+                    }
+
+                    initialize();
+
+                    $("#categorySelectObj").change(function(){
+                        generateGraphObj(parsed, $("#categorySelectObj").val(),  $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+                    });
+                    $("#categorySelectSub").change(function(){
+                        generateGraphSub(parsed, $("#categorySelectSub").val(), $("#quarterSelect").val(), $("#businessSelect").val(), $("#locationSelect").val(), $("#subBusinessSelect").val());
+                    });
+                    $("#quarterSelect").change(function(){
+                        generateGraphAndTable();
+                   });
+                    $("#businessSelect").change(function(){
+                        generateGraphAndTable();
+                    })
+                    $("#subBusinessSelect").change(function(){
+                        generateGraphAndTable();
+                    })
+                    $("#locationSelect").change(function(){
+                        generateGraphAndTable();
+                    })
+                }
+            });
+        }
+
+
+    .jumbotron.subhead(style="padding-top: 80px")
+        .container
+            h2 Quarter Analysis
+
+    .row-fluid( style="padding-top: 20px")
+        .container
+            form.form-inline
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Select Quarter
+                select.input-medium#quarterSelect
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Select Business
+                select.input-medium#businessSelect
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Select Sub-business
+                select.input-medium#subBusinessSelect
+              .input-prepend(style='padding-left: 10px; padding-bottom: 10px')
+                span.add-on Select Location
+                select.input-medium#locationSelect                        
+    .container
+        .tabbable
+              ul.nav.nav-tabs
+                li.active
+                  a(href='#ObjectiveTab', data-toggle='tab') Objective Score By Category
+                li
+                  a(href='#SubjectiveTab', data-toggle='tab') Subjective Score By Category
+                li
+                  a(href='#DataTable', data-toggle='tab') Data Table
+              .tab-content
+                #ObjectiveTab.tab-pane.active
+                    form.form-horizontal
+                        .control-group
+                            label.control-label Select Objective Category
+                            .controls
+                                select.span8#categorySelectObj
+                                    option(value="team") Team
+                                    option(value="environment") Environment
+                                    option(value="informationRadiators") Context
+                                    option(value="process") Process
+                                    option(value="qualityMetrics") Quality Metrics
+                                    option(value="definitionOfReady") Definition of Ready
+                                    option(value="definitionOfDone") Definition of Done
+                                    option(value="continuousIntegration") Continuous Integration
+                    div#objective
+                        canvas#objectiveHBar(width="500", height="") [No canvas support]
+                #SubjectiveTab.tab-pane
+                    form.form-horizontal
+                        .control-group
+                            label.control-label Select Subjective Category
+                            .controls
+                                select.span8#categorySelectSub
+                                    option(value="0") Happy
+                                    option(value="1") Focused
+                                    option(value="2") Work/life Balance
+                                    option(value="3") Scope Confidence
+                                    option(value="4") Quality Confidence
+                                    option(value="5") Tech Debt under Control
+                                    option(value="6") Backlog readiness
+                                    option(value="7") No Knowledge Silos
+                                    option(value="8") User Feedback
+                                    option(value="9") Improving
+                    div#subjective
+                        canvas#subjectiveHBar(width="500", height="") [No canvas support]  
+                #DataTable.tab-pane
+                    table.table.table-hover
+                        thead 
+                            tr 
+                                th Team
+                                th Business
+                                th SubBusiness
+                                th Location
+                                th Team
+                                th Environment
+                                th Context
+                                th Process
+                                th Ready
+                                th Done
+                                th Quality
+                                th CI
+                                th Build Time
+                                th Hardening Sprints
+                                th Total Score
+                                th Subjective
+                        tbody#quarterTableBody
+          
+
+            

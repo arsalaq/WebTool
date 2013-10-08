@@ -1,0 +1,213 @@
+extends ../layout
+
+block content
+  script(src='/lib/angular/angular.js')
+  script(src='/js/controllers.js')
+  .container-fluid(ng-app, style='margin-top: 40px;')
+    .row-fluid(ng-controller="IndividualTeam")
+      .page-header
+        h2 Add survey for #{data.teamName}
+        .row-fluid
+          form.form-horizontal(method="POST", action="/surveys/add/submit/"+data.id)
+              .span12
+                .span6.offset3
+                  .row-fluid
+                    .control-group
+                      label.control-label(for='TeamName') Select Quarter 
+                      .controls
+                        select.input-xlarge(name="quarter")
+                          each quarter in quarters
+                            - var foo = 0
+                            for survey, i in data.surveys
+                              if data.surveys[i].quarter != quarter
+                                - foo = foo+1
+                            if foo == data.surveys.length
+                              option(value=quarter)= quarter
+                        p Already submitted for: 
+                          - for(i=0; i<data.surveys.length; i++){
+                            a(style='color: green')= data.surveys[i].quarter + " | "
+                          -}
+                  //       select(ng-model='previousSubmissions')
+                  //         option(ng-repeat='surveys in team.surveys', value="{{$index}}") {{surveys.quarter}}
+                        
+                  .control-group
+                      label.control-label(for='currentProduct') Current Product
+                      .controls 
+                        input(type='text', placeholder='Enter current product name', name="currentProduct", value='{{team.surveys[team.surveys.length-1].currentProduct}}', required) 
+                  .control-group
+                      label.control-label(for='currentProject') Current Project
+                      .controls 
+                        input(type='text', placeholder='Enter current project name', name="currentProject", value='{{team.surveys[team.surveys.length-1].currentProject}}', required) 
+                .row-fluid
+                  .span6
+                      // ---------- Team
+                      .page-header
+                        h4 Team
+                      .control-group
+                        label.control-label(for='Team') Check all that are included:
+                        div(ng-repeat='teamCategory in teamCat')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].team[$index]}}', type='checkbox', value="1", name='team[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].team[$index]}}', style="color: {{color}}") {{teamCategory}}
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].team[$index]}}', type='checkbox', value="1", name='team[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].team[$index]}}') {{teamCategory}} 
+                              
+                      // ---------- Environment
+                      .page-header
+                        h4 Environment
+                      .control-group
+                        label.control-label(for='Environment') Check all that are included:
+                        div(ng-repeat='environmentCategory in environment')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].environment[$index]}}', type='checkbox', value="1", name='environment[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].environment[$index]}}') {{environmentCategory}}
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].environment[$index]}}', type='checkbox', value="1", name='environment[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].environment[$index]}}', style="color: {{color}}") {{environmentCategory}}
+
+                      // ---------- Information Radiators
+                      .page-header
+                        h4 Information Radiators
+                      .control-group
+                        label.control-label(for='InformationRadiators') Check all that are included:
+                        div(ng-repeat='IRCategory in informationRadiators')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].informationRadiators[$index]}}', type='checkbox', value="1", name='informationRadiators[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].informationRadiators[$index]}}') {{IRCategory}}
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].informationRadiators[$index]}}', type='checkbox', value="1", name='informationRadiators[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].informationRadiators[$index]}}', style="color: {{color}}") {{IRCategory}}
+
+                      // ---------- Process
+                      .page-header
+                        h4 Process
+                      .control-group
+                        label.control-label(for='Process') Check all that are included:
+                        div(ng-repeat='ProcessCategory in process')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].process[$index]}}', type='checkbox', value="1", name='process[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].process[$index]}}') {{ProcessCategory}}
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].process[$index]}}', type='checkbox', value="1", name='process[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].process[$index]}}', style="color: {{color}}") {{ProcessCategory}}
+                  
+                      // ---------- Definition Of Ready
+                      .page-header
+                        h4 Definition Of Ready
+                      .control-group
+                        label.control-label(for='DefinitionOfReady') Check all that are included:
+                        div(ng-repeat='DORCategory in definitionOfReady')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].definitionOfReady[$index]}}', type='checkbox', value="1", name='definitionOfReady[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].definitionOfReady[$index]}}') {{DORCategory}}
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].definitionOfReady[$index]}}', type='checkbox', value="1", name='definitionOfReady[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].definitionOfReady[$index]}}', style="color: {{color}}") {{DORCategory}}
+                  
+                  .span6
+                      // ---------- Definition Of Done
+                      .page-header
+                        h4 Definition Of Done
+                      .control-group
+                        label.control-label(for='DefinitionOfDone') Check all that are included:
+                        div(ng-repeat='DODCategory in definitionOfDone')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].definitionOfDone[$index]}}', type='checkbox', value="1", name='definitionOfDone[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].definitionOfDone[$index]}}') {{DODCategory}}
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].definitionOfDone[$index]}}', type='checkbox', value="1", name='definitionOfDone[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].definitionOfDone[$index]}}', style="color: {{color}}") {{DODCategory}}
+             
+                      // ---------- Quality Metrics
+                      .page-header
+                        h4 Quality Metrics
+                      .control-group
+                        label.control-label(for='QualityMetrics') Check all that are being measured and trended:
+                        div(ng-repeat='QMCategory in qualityMetrics')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].qualityMetrics[$index]}}', type='checkbox', value="1", name='qualityMetrics[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].qualityMetrics[$index]}}') {{QMCategory}}
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].qualityMetrics[$index]}}', type='checkbox', value="1", name='qualityMetrics[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].qualityMetrics[$index]}}', style="color: {{color}}") {{QMCategory}}
+                      
+                      // ---------- Continuous Integration
+                      .page-header
+                        h4 Continuous Integration
+                      .control-group
+                        label.control-label(for='ContinuousIntegration') Check all that happen automatically at each check-in:
+                        div(ng-repeat='CICategory in CI')
+                          .controls
+                            label.checkbox
+                              label
+                                input(ng-hide='{{team.surveys[team.surveys.length-1].continuousIntegration[$index]}}', type='checkbox', value="1", name='continuousIntegration[{{number[$index]}}]') 
+                                span(ng-hide='{{team.surveys[team.surveys.length-1].continuousIntegration[$index]}}') {{CICategory}}
+                              label
+                                input(ng-show='{{team.surveys[team.surveys.length-1].continuousIntegration[$index]}}', type='checkbox', value="1", name='continuousIntegration[{{number[$index]}}]', checked) 
+                                span(ng-show='{{team.surveys[team.surveys.length-1].continuousIntegration[$index]}}', style="color: {{color}}") {{CICategory}}
+                      // ---------- CI Build Time
+                      .page-header
+                        h4 Average CI build time
+                      .control-group
+                        label.control-label(for='AverageBuildTime') 
+                          | In minutes [Between 0-60]
+                          | (-1 if unknown)
+                        .controls
+                          input#AverageBuildTime(type='text', placeholder='7', value="{{team.surveys[team.surveys.length-1].buildTime}}", name="buildTime", required)
+                      
+                      // ---------- Hardening Sprints
+                      .page-header
+                        h4 Number of Hardening Sprints expected to be required for final testing, fixing documenting, and other release activities
+                      .control-group
+                        label.control-label(for='HardeningSprints') 
+                          | (from when we stop adding functionality
+                        .controls
+                          input#HardeningSprints(type='text', placeholder='5', value="{{team.surveys[team.surveys.length-1].hardeningSprints}}",name="hardeningSprints", required)
+                      
+                      // ---------- Subjective Score
+                      .page-header
+                        h4 Subjective Score
+                        h6 Rate on a scale of 1 - 10 (where 10 is best)
+                      .control-group(ng-repeat='subjectiveCategory in subjective')
+                        label.control-label {{subjectiveCategory}}
+                        .controls
+                            select(name="subjective")
+                              option(value='{{team.surveys[team.surveys.length-1].subjective[$index]}}') {{team.surveys[team.surveys.length-1].quarter}} response: {{team.surveys[team.surveys.length-1].subjective[$index]}} 
+                              - for(i=1; i<11; i++) {
+                                option(value=i)= i 
+                              - }
+                      
+                      // ---------- Improvement Goals
+                      .page-header
+                        h4 Improvement Goals
+                      .control-group
+                        label.control-label(for='ImprovementGoal')
+                          | What are improvement goals for next quarter
+                        .controls
+                          textarea.span8#improvementGoal(placeholder="{{team.surveys[team.surveys.length-1].quarter}} response: {{team.surveys[team.surveys.length-1].improvementGoal}}", name="improvementGoal", rows="3", required)
+                      // ---------- Issues
+                      .page-header
+                        h4 Issues:
+                      .control-group
+                        label.control-label(for='Issues')
+                          | Please describe if team had any tool issues:
+                        .controls
+                          textarea.span8#Issues(placeholder="{{team.surveys[team.surveys.length-1].quarter}} response: {{team.surveys[team.surveys.length-1].issues}}", name="issues", rows="3")
+              .span11
+                .well
+                  button.btn.btn-large.btn-block.btn-primary#submitSurvey(type='submit') Submit Survey

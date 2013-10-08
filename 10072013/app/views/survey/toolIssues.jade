@@ -1,0 +1,26 @@
+extends ../layout 
+
+block content
+    script(type='text/javascript', src='/javascripts/jquery.tablesorter.min.js')
+    script(src='/lib/angular/angular.js')
+    script(src='/js/controllers.js')
+    .jumbotron.subhead(style="padding-top: 80px")
+        .container
+            h2 All Issues
+    .container(ng-app, style="padding-top: 20px")
+        .row-fluid(ng-controller='TeamListCtrl')
+            .span12
+                table.tablesorter.table.table-hover#sorted
+                    thead
+                        tr
+                            th(style="padding-right: 20px") Team Name 
+                            th(style="padding-right: 20px") Quarters
+                            th(style="padding-right: 20px") Issues
+
+                    tbody
+                        tr(ng-repeat='team in teams')
+                            td {{team.teamName}} 
+                            td
+                                p(ng-repeat='survey in team.surveys') {{survey.quarter}}
+                            td
+                                p(ng-repeat='survey in team.surveys') {{survey.issues}}

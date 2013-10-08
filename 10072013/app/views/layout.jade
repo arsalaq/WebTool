@@ -1,0 +1,29 @@
+doctype 5
+html
+	head
+		title= title
+		meta(name='viewport', content='width=device-width, initial-scale=1.0')
+		script(type='text/javascript', src='http://platform.twitter.com/widgets.js')
+		link(href='/assets/css/bootstrap.css', rel='stylesheet')
+		link(href='/assets/css/bootstrap-responsive.css', rel='stylesheet')
+		link(href='/assets/css/docs.css', rel='stylesheet')
+		script(type='text/javascript', src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js')
+		style(type='text/css')
+			body {
+				margin: 0px;
+				padding: 0px;
+				}
+				#container {
+				width : 600px;
+				height: 384px;
+				margin: 8px auto;
+				}
+				#editor-render-0 {
+					width: 340px;
+					height: 220px;
+					margin: 24px auto;
+				}
+			}
+		include header
+		block content
+		include footer

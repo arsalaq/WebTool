@@ -1,0 +1,25 @@
+extends layout
+
+block content
+    .jumbotron.subhead(style="padding-top: 80px")
+        .container
+            h2 Agile Scorecard
+    .container(style="margin: 20px auto 10px;")
+        .container
+            .row-fluid
+                .span6
+                    .well(style="max-width: 400px; margin: 0 auto 10px;")
+                        a.button.btn.btn-large.btn-block(type='button', href="/surveys/add") Submit a Survey
+
+                .span6
+                    .well(style="max-width: 400px; margin: 0 auto 10px;")
+                        a.button.btn.btn-large.btn-primary.btn-block(type='button') Team Members
+        .container
+            .row-fluid
+                .span6
+                    .well(style="max-width: 400px; margin: 10px auto 10px;")
+                        a.button.btn.btn-large.btn-success.btn-block(type='button') Managers
+
+                .span6
+                    .well(style="max-width: 400px; margin: 10px auto 10px;")
+                        a.button.btn.btn-large.btn-info.btn-block(type='button') Agile Coach

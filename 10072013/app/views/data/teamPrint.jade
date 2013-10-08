@@ -1,0 +1,701 @@
+doctype 5
+html
+    head
+        title= title
+        meta(name='viewport', content='width=device-width, initial-scale=1.0')
+        script(type='text/javascript', src='http://platform.twitter.com/widgets.js')
+        link(href='/assets/css/bootstrap.css', rel='stylesheet')
+        link(href='/assets/css/bootstrap-responsive.css', rel='stylesheet')
+        link(href='/assets/css/docs.css', rel='stylesheet')
+        script(type='text/javascript', src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js')
+        style(type='text/css')
+            body {
+                margin: 0px;
+                padding: 0px;
+                }
+                #container {
+                width : 600px;
+                height: 384px;
+                margin: 8px auto;
+                }
+                #editor-render-0 {
+                    width: 340px;
+                    height: 220px;
+                    margin: 24px auto;
+                }
+            }
+    script(src='/libraries/RGraph/RGraph.common.core.js')
+    script(src='/libraries/RGraph/RGraph.common.dynamic.js')
+    script(src='/libraries/RGraph/RGraph.common.key.js')
+    script(src='/libraries/RGraph/RGraph.drawing.rect.js')
+    script(src='/libraries/RGraph/RGraph.common.tooltips.js')
+    script(src='/libraries/RGraph/RGraph.common.effects.js')
+    script(src='/libraries/RGraph/RGraph.radar.js')
+    script(type='text/javascript', src='/javascripts/excanvas.js')
+    script(src='/assets/js/bootstrap-tab.js')
+    script
+          window.onload = function ()
+          {
+            var pathArray = window.location.pathname.split( '/' );
+            $.ajax({
+                url: '/JSON/'+pathArray[3],
+                success: function(data, textStatus, jqXHR){
+                    var res = jqXHR.responseText;
+                    var parsed = $.parseJSON(res).data
+
+                    var questionKeyArray = new Array();
+                    var questionArray = new Array();
+                    var countArray = new Array();
+                    var optionArray = new Array();
+                    var quarterArray = new Array();
+
+                    for(i=0; i<parsed.surveys.length; i++){
+                        if($.inArray(parsed.surveys[i].quarter, quarterArray) == -1){
+                            quarterArray[quarterArray.length] = parsed.surveys[i].quarter;
+                        }
+                    }
+                    for(i=0; i< quarterArray.length; i++){
+                        $("#quarterSelect").append("<option value='" + quarterArray[i] + "'> " + quarterArray[i] + "</option>");
+                    }
+                    questionKey = [
+                        "TS",
+                        "S2",
+                        "SD",
+                        "P3",
+                        "PL",
+                        "QE",
+                        "UX",
+                        "AL",
+                        "D1",
+                        "T1",
+                        "ST",
+                        "SO",
+                        "SA",
+                        "SH",
+                        "PB",
+                        "TW",
+                        "MA",
+                        "PS",
+                        "WA",
+                        "PA",
+                        "VN",
+                        "PD",
+                        "RP",
+                        'RT',
+                        'PR',
+                        'UW',
+                        'AB',
+                        'AS',
+                        'AG',
+                        'MT',
+                        'BG',
+                        'SP',
+                        'DS',
+                        'DM',
+                        'RM',
+                        '2S',
+                        'QR',
+                        'SS',
+                        'DR',
+                        'DD',
+                        'NC',
+                        'SC',
+                        'IN',
+                        'NG',
+                        'VB',
+                        'ES',
+                        'SM',
+                        'TE',
+                        'PZ',
+                        'UC',
+                        'VE',
+                        'VA',
+                        'UT',
+                        'TD',
+                        'AT',
+                        'BD',
+                        'BD',
+                        'DC',
+                        'QD',
+                        'CF',
+                        'NU',
+                        'NO',
+                        'NS',
+                        'NP',
+                        'NB',
+                        'NA',
+                        'NT',
+                        'RA',
+                        'HS',
+                        'BU',
+                        'BL',
+                        'IG',
+                        'UR',
+                        'SR',
+                        'RR',
+                        'CA',
+                        'RE',
+                        'NE',
+                        'ND',
+                        'GC'
+
+                    ]
+                    questionArray = [
+                        "Team size ten or fewer",
+                        "Scrum master supports two or fewer teams",
+                        "Scrum master dedicated role (full time as a scrum master)",
+                        "Product owner supports three or fewer teams",
+                        "Product owner local and easily available for meetings and conversations",
+                        "Quality engineer local and easily available for meetings and conversations",
+                        "Interaction designer (UX) local and easily available for meetings and conversations",
+                        "Architect local and easily available for meetings and conversations",
+                        "Developers only on one team",
+                        "Testers only on one team",
+                        "Same time zone",
+                        "Same office building",
+                        "Same area of office",
+                        "Shared team space",
+                        "Physical scrum board",
+                        "team Wiki",
+                        "Meeting area easily available",
+                        "Pairing stations easily available",
+                        "Whiteboards easily available",
+                        "Projector easily available",
+                        "Vision",
+                        "Product data sheet",
+                        "Roadmap",
+                        "Revenue trend",
+                        "Personas",
+                        "User workflow/context scenario list",
+                        "Architecture block diagram",
+                        "Architecture sequence diagram",
+                        "Agile scorecard",
+                        "Metric trends",
+                        "Backlog grooming meeting every sprint",
+                        "Sprint planning meeting fast and effective",
+                        "Daily stand-up meetings fast and effective",
+                        "Demo/review meeting effective and focused on showing product",
+                        "Retrospective meeting varied and effective - follow through on improvements",
+                        "Two week sprints",
+                        "Quarterly release trains",
+                        "Scrum of scrums effective managing dependencies (or only one team)",
+                        "Definition of Ready (before sprint planning) checklist posted and used",
+                        "Definition of Done checklist posted and used",
+                        "Story name follows conventions",
+                        "Spike considered",
+                        "Independent (of other stories and teams)",
+                        "Negotiable",
+                        "Valuable (to end user preferably - PO understands and accepts value)",
+                        "Estimated (relative story points assigned by whole team)",
+                        "Small (enable continuous flow of stories closing 6-10 per sprint)",
+                        "Testable (acceptance criteria documented and failure modes considered)",
+                        "Prioritized",
+                        "UX complete if applicable (wireframes/mock-ups/screens)",
+                        "Verification dry run",
+                        "Validation dry run, including formative usability testing",
+                        "Automated unit tests",
+                        "TDD",
+                        "Automated acceptance/regression tests",
+                        "BDD",
+                        "All bugs associated with the story closed",
+                        "User documentation complete",
+                        "QMS design documents content updated",
+                        "User/customer feedback",
+                        "Verification dry run",
+                        "Validation dry run, including formative usability testing",
+                        "Automated unit tests",
+                        "TDD",
+                        "Automated acceptance/regression tests",
+                        "BDD",
+                        "All bugs associated with the story closed",
+                        "User documentation complete",
+                        "QMS design documents content updated",
+                        "User/customer feedback",
+                        "Build triggered",
+                        "Install generated",
+                        "Unit tests run",
+                        "Smoke test run",
+                        "Acceptance/regression tests run",
+                        "Static code analysis run",
+                        "Results recorded",
+                        "Team notified of breaks through email",
+                        "Team notified of breaks through dashboard or ambient tech",
+                        "Gated check-in (if any step fails, the change is rejected)"
+                    ];
+                    countArray = [
+                        "one",
+                        "two",
+                        "three",
+                        "four",
+                        "five",
+                        "six",
+                        "seven",
+                        "eight",
+                        "nine",
+                        "ten"
+                    ];
+                    optionArray = [
+                        "team",
+                        "environment",
+                        "informationRadiators",
+                        "process",
+                        "definitionOfReady",
+                        "definitionOfDone",
+                        "qualityMetrics",
+                        "continuousIntegration",
+                    ];
+
+                    var catObj = new Array();
+                    catObj = [
+                        'Team', 
+                        'Environment',
+                        'Context',
+                        'Process',
+                        'Ready',
+                        'Done',
+                        'Quality',
+                        'CI'
+                    ]
+                     var catSub = new Array();
+                    catSub = [
+                          'Happy', 
+                          'Focused',
+                          'Work/Life',
+                          'Scope',
+                          'Quality', 
+                          'Tech Debt', 
+                          'Back log', 
+                          'No Knowledge Silos',
+                          'User Feedback',
+                          'Improving'
+                      ]
+
+                    function countSum(category){
+                        var sum = 0;
+                        for(var z=0; z<10; z++){
+                            sum = sum + category[z];
+                        }
+                        return sum;
+                    }   
+                    function arrayGenObjective(team){
+                        var array = new Array();
+                        array[0] = countSum(team.team);
+                        array[1] = countSum(team.environment);
+                        array[2] = countSum(team.informationRadiators);
+                        array[3] = countSum(team.process);
+                        array[4] = countSum(team.definitionOfReady);
+                        array[5] = countSum(team.definitionOfDone);
+                        array[6] = countSum(team.qualityMetrics);
+                        array[7] = countSum(team.continuousIntegration);
+                        return array;
+                    }
+                    function arrayGenSubjective(team){
+                        var array = new Array();
+                            for(i=0; i<10; i++){
+                                array[i] = team.subjective[i];
+                            }
+                        return array;
+                     }
+
+                    function generateRadarAndIssues(parsed, year){
+                        $("#improvement").empty();
+
+                        $("#subClear").empty();
+                        $("#objClear").empty();
+                        $("#subClear").append("<canvas id='cvs2' width='500' height='300'> [No Canvas Support] <canvas>")
+                        $("#objClear").append("<canvas id='cvs' width='500' height='300'> [No Canvas Support] <canvas>")
+
+                        var radarObjectiveVals = new Array();  
+                        for(i=0; i < parsed.surveys.length; i++){
+                            radarObjectiveVals[i] = new Array();
+                            var array = arrayGenObjective(parsed.surveys[i])
+
+                            if(parsed.surveys[i].quarter.indexOf(year) != -1){
+                                    for(j=0; j < array.length; j++){
+                                        radarObjectiveVals[i][j] = array[j]
+                                    }  
+                            } else {
+                                    for(j=0; j < array.length; j++){
+                                        radarObjectiveVals[i][j] = 0;
+                                    }
+                            }
+                        }
+
+                        var radarSubjectiveVals = new Array();
+                        for(var i=0; i < parsed.surveys.length; i++){
+                            radarSubjectiveVals[i] = new Array();
+                            var array2 = arrayGenSubjective(parsed.surveys[i])
+                            if(parsed.surveys[i].quarter.indexOf(year) != -1){
+                                    for(j=0; j < array2.length; j++){
+                                        radarSubjectiveVals[i][j] = array2[j];
+                                    } 
+                            } else {
+                                    for(j=0; j < array2.length; j++){
+                                        radarSubjectiveVals[i][j] = 0;
+                                    } 
+                            } 
+                        }
+
+                        var quarters = new Array();
+                        for(i=0; i<parsed.surveys.length; i++){
+                            if($.inArray(parsed.surveys[i].quarter, quarters) && parsed.surveys[i].quarter.indexOf($("#yearSelect").val()) != -1 ){
+                                quarters[quarters.length] = parsed.surveys[i].quarter;
+                            }
+                        }
+
+                        for(i = 0; i< parsed.surveys.length; i++){
+                            if(parsed.surveys[i].quarter.indexOf(year) != -1){
+                                $(improvement).append("<tr>")
+                                $(improvement).append("<td>" + parsed.surveys[i].quarter + "</td>");
+                                $(improvement).append("<td><i>" + parsed.surveys[i].improvementGoal + "</i></td>");
+                                $(improvement).append("<td><i>" + parsed.surveys[i].issues + "</i></td>");
+                                $(improvement).append("</tr>");
+                            }
+                        }
+                    
+
+
+                        var radarObjective = new RGraph.Radar('cvs', radarObjectiveVals)
+                        .Set('labels', catObj)
+                        .Set('background.circles.poly', true)
+                        .Set('background.circles.spacing', 30)
+                        .Set('colors', ['rgba(255,51,51,0.25)','rgba(51,255,51,0.25)', 'rgba(51,51,255,0.25)', 'rgba(153,51,255,0.25)'])
+                        .Set('axes.color', 'transparent')
+                        .Set('highlights', true)
+                        .Set('key', quarters)
+                        .Set('key.interactive', true)
+                        .Set('strokestyle', ['red','green', 'blue', 'orange'])
+                        .Draw();  
+                      
+
+                        var radarSubjective = new RGraph.Radar('cvs2', radarSubjectiveVals)
+                        .Set('labels', catSub)
+                        .Set('background.circles.poly', true)
+                        .Set('background.circles.spacing', 30)
+                        .Set('colors', ['rgba(255,51,51,0.25)','rgba(51,255,51,0.25)', 'rgba(51,51,255,0.25)', 'rgba(153,51,255,0.25)'])
+                        .Set('axes.color', 'transparent')
+                        .Set('key', quarters)
+                        .Set('key.interactive', true)
+                        .Set('highlights', true)
+                        .Set('strokestyle', ['red','green','blue', 'orange'])
+                        .Draw();
+                    }
+
+                    function objectiveScoreDetail(team, quarter, optionArray, countArray) {
+                        var z = 0;
+                            $("#teamBody").empty();
+                            $("#environmentBody").empty();
+                            $("#contextBody").empty();
+                            $("#processBody").empty();
+                            $("#readyBody").empty();
+                            $("#doneBody").empty();
+                            $("#qualityBody").empty();
+                            $("#CIBody").empty();
+
+                            while(z>-1 && z < 10){
+                                for(i=0; i<team.surveys.length; i++){
+                                    //console.log([team.surveys[i][optionArray[Math.floor(z/10)]]])
+
+                                    if(team.surveys[i].quarter == quarter){
+                                        if([team.surveys[i][optionArray[Math.floor(z/10)]][z%10]] ==1){
+                                            $("#teamBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#teamBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+                                    }
+                                }
+                                z++;
+                            } 
+                            while(z>9 && z < 20){
+                                for(i=0; i<team.surveys.length; i++){
+                                    //console.log([team.surveys[i][optionArray[Math.floor(z/10)]]])
+                                    
+                                    if(team.surveys[i].quarter == quarter){
+                                        if(team.surveys[i][optionArray[Math.floor(z/10)]][z%10] ==1){
+                                            $("#environmentBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#environmentBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+                                    }
+                                }
+                                z++;
+                            }
+                            while(z>19 && z < 30){
+                                for(i=0; i<team.surveys.length; i++){
+                                    if(team.surveys[i].quarter == quarter){
+                                        if([team.surveys[i][optionArray[Math.floor(z/10)]][z%10]] ==1){
+                                            $("#contextBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#contextBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+                                    }
+                                }
+                                z++;
+                            }      
+                            while(z>29 && z < 40){
+                                for(i=0; i<team.surveys.length; i++){
+                                    if(team.surveys[i].quarter == quarter){
+                                        if([team.surveys[i][optionArray[Math.floor(z/10)]][z%10]] ==1){
+                                            $("#processBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#processBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+                                    }
+                                }
+                                z++;
+                            }  
+                            while(z>39 && z < 50){
+                                for(i=0; i<team.surveys.length; i++){
+                                    if(team.surveys[i].quarter == quarter){
+                                        if([team.surveys[i][optionArray[Math.floor(z/10)]][z%10]] ==1){
+                                            $("#readyBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#readyBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+                                    }
+                                }
+                                z++;
+                            } 
+                            while(z>49 && z < 60){
+                                for(i=0; i<team.surveys.length; i++){
+                                    if(team.surveys[i].quarter == quarter){
+                                        if([team.surveys[i][optionArray[Math.floor(z/10)]][z%10]] ==1){
+                                            $("#doneBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#doneBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+                                    }
+                                }
+                                z++;
+                            } 
+                            while(z>59 && z < 70){
+                                for(i=0; i<team.surveys.length; i++){
+                                    if(team.surveys[i].quarter == quarter){
+                                        if([team.surveys[i][optionArray[Math.floor(z/10)]][z%10]] ==1){
+                                            $("#qualityBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#qualityBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+                                    }
+                                }
+                                z++;
+                            } 
+                            while(z>69 && z < 80){
+                                for(i=0; i<team.surveys.length; i++){
+                                    if(team.surveys[i].quarter == quarter){
+                                        if([team.surveys[i][optionArray[Math.floor(z/10)]][z%10]] ==1){
+                                            $("#CIBody").append("<tr class='success'><td>Yes</td> <td>" + questionKey[z] + "</td></tr>");
+                                        } else {
+                                            $("#CIBody").append("<tr><td>No</td> <td>" + questionKey[z] + "</td></tr>");
+                                        }
+
+                                    }
+                                }
+                                z++;
+                            } 
+
+                    }
+                    generateRadarAndIssues(parsed, new Date().getFullYear());
+                    objectiveScoreDetail(parsed, $("#quarterSelect").val(), optionArray, countArray);
+
+                    $("#quarterSelect").change(function(){
+                        objectiveScoreDetail(parsed, $("#quarterSelect").val(), optionArray, countArray);
+                    })
+
+                    $("#yearSelect").change(function(){
+                        generateRadarAndIssues(parsed, $("#yearSelect").val());
+                    })
+
+                    if(parsed.disbanded == true){
+                        $("#disbandedNotification").append("<div class='alert alert-error'> <h4>Important Information:</h4> This team is no longer active. </div>")
+                    }
+
+                    $(document).ready(
+                        window.print()
+                        );
+                  }
+            })
+          }
+
+    .well(style="margin-top: 0px;")
+        h2 Team Name: #{teamResult.teamName}
+        table.table.table-hover
+            tbody
+                tr
+                    td Business:  #{teamResult.business}
+                    td SubBusiness:  #{teamResult.subBusiness}  
+                    td Site:  #{teamResult.site}
+                    td Current Project:  #{teamResult.surveys[teamResult.surveys.length -1].currentProduct}      
+                    td Current Project:  #{teamResult.surveys[teamResult.surveys.length -1].currentProject} 
+        #disbandedNotification
+        table.table
+            tbody 
+                tr
+                    td 
+                        p Select Year: 
+                        select.input-block-level#yearSelect 
+                            option(value="2013") 2013
+                            option(value="2014") 2014
+                            option(value="2015") 2015
+                    td        
+                        p Select Quarter for Detailed Report:
+                        select.input-block-level#quarterSelect
+
+    .container
+        .page-header
+            h2 Team Profile
+        table.table
+            .tbody 
+                tr 
+                    td 
+                        .span6
+                            table.table.table-hover
+                                thead
+                                    tr
+                                        th Role 
+                                        th Member
+                                tbody
+                                    tr
+                                        td Scrum Master
+                                        td #{teamResult.scrumMaster.first} #{teamResult.scrumMaster.last} | #{teamResult.scrumMaster.SSO}
+                                    tr
+                                        td Product Owner
+                                        td #{teamResult.productOwner.first} #{teamResult.productOwner.last} | #{teamResult.productOwner.SSO}
+                                    tr
+                                        td Interaction Designer
+                                        td #{teamResult.interactionDesigner.first} #{teamResult.interactionDesigner.last} | #{teamResult.interactionDesigner.SSO}
+                                    tr
+                                        td Quality Engineer
+                                        td #{teamResult.qualityEngineer.first} #{teamResult.qualityEngineer.last} | #{teamResult.qualityEngineer.SSO}
+                                    tr
+                                        td Architect
+                                        td #{teamResult.architect.first} #{teamResult.architect.last} | #{teamResult.architect.SSO}
+                                    -for(var i=0; i< teamResult.teamMembers.length; i++){
+                                        tr
+                                            td= "Team Member " + i 
+                                            td=  teamResult.teamMembers[i].first + " " + teamResult.teamMembers[i].last + " | " + teamResult.teamMembers[i].SSO
+                                    - }
+                    
+                    td
+                        .span5 
+                            table.table.table-striped
+                                thead
+                                    tr 
+                                        th Quarter
+                                        th Improvement Goal
+                                        th Tool Issues
+                                tbody#improvement
+                            table.table.table-hover
+                                thead
+                                    tr 
+                                        th Quarter
+                                        th Build Time 
+                                        th Hardening Sprints
+                                tbody
+                                    -for (var i = 0; i < teamResult.surveys.length ; i++) {
+                                        tr
+                                            td= teamResult.surveys[i].quarter
+                                            td= teamResult.surveys[i].buildTime
+                                            td= teamResult.surveys[i].hardeningSprints    
+                                    - };
+    .container
+        .row-fluid
+            table.table
+                tbody 
+                    tr 
+                        td
+                            .page-header
+                                h2 Subjective Score
+                            #subClear
+                                canvas#cvs2(width='500', height='300') [No canvas support]
+                        td
+                            .page-header
+                                h2 Objective Score
+                            #objClear
+                                canvas#cvs(width='500', height='300') [No canvas support]
+    hr.soften
+        
+    table.table
+        tbody 
+            tr 
+                td
+                    .span3#team
+                            .page-header
+                                h4 Team
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#teamBody
+                td
+                    .span3#environment
+                            .page-header
+                                h4 Environment
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#environmentBody
+                td
+                    .span3#context
+                            .page-header
+                                h4 Context
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#contextBody
+                td
+                    .span3#process
+                            .page-header
+                                h4 Process
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#processBody
+            tr
+                td
+                    .span3#ready
+                            .page-header
+                                h4 Ready
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#readyBody
+                td
+                    .span3#done
+                            .page-header
+                                h4 Done
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#doneBody
+                td
+                    .span3#quality
+                            .page-header
+                                h4 Quality
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#qualityBody   
+                td
+                    .span3#CI
+                            .page-header
+                                h4 CI
+                            table.table.table-hover
+                                thead 
+                                    tr 
+                                        th Checked 
+                                        th Category
+                                    tbody#CIBody   

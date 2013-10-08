@@ -1,0 +1,302 @@
+extends ../layout 
+
+block content
+    script(src='/libraries/RGraph/RGraph.common.core.js')
+    script(src='/libraries/RGraph/RGraph.common.tooltips.js')
+    script(src='/libraries/RGraph/RGraph.common.dynamic.js')
+    script(src='/libraries/RGraph/RGraph.common.effects.js')
+    script(src='/libraries/RGraph/RGraph.pie.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.hbar.js')
+    script(type='text/javascript', src='/javascripts/excanvas.js')
+
+    script
+        window.onload = function ()
+            {
+            $.ajax({
+                url: '/JSON/allTeams',
+                success: function(data, textStatus, jqXHR){
+                    var res = jqXHR.responseText;
+                    var parsed = $.parseJSON(res).data;
+                    
+                    function generateGraphs(data, quarter){
+                        $(missing).empty();
+                        $(missingDisbanded).empty();
+                        $(totalTeams).empty();
+                        $(submittedStatusPie).empty();
+                        $(submittedStatusPie).append("<canvas id='submittedStatus' width='480' height='300'> </canvas>");
+
+                        var disbanded = 0;
+                        for(i=0; i< data.length; i++){
+                            if(data[i].disbanded == true){
+                                disbanded++;
+                            }
+                        }
+
+                        var count = 0;
+                        for(i = 0; i < data.length; i++){
+                            var set = 0;
+                            for(j= 0; j < data[i].surveys.length; j++){
+                                if(data[i].surveys[j].quarter == quarter){
+                                    if(data[i].disbanded != true){
+                                        count++;
+                                    }
+                                } else {
+                                    set++;
+                                }
+                            }
+                                if(set == data[i].surveys.length){
+                                    if(data[i].disbanded != true){
+                                        $(missing).append("<tr><td>" + 
+                                                          data[i].teamName + 
+                                                          "</td><td>" + 
+                                                          data[i].business + 
+                                                          "</td><td>" + 
+                                                          data[i].site + 
+                                                          "</td><td>" + 
+                                                          data[i].scrumMaster.first + " " + data[i].scrumMaster.last  +
+                                                          "</td><td>" + 
+                                                          data[i].productOwner.first + " " + data[i].productOwner.last  +
+                                                          "</td></tr>");
+                                    } else {
+                                        $(missingDisbanded).append("<tr class='error'><td>" + 
+                                                          data[i].teamName + 
+                                                          "</td><td>" + 
+                                                          data[i].business + 
+                                                          "</td><td>" + 
+                                                          data[i].site + 
+                                                          "</td><td>" + 
+                                                          data[i].scrumMaster.first + " " + data[i].scrumMaster.last  +
+                                                          "</td><td>" + 
+                                                          data[i].productOwner.first + " " + data[i].productOwner.last  +
+                                                          "</td></tr>");
+                                    }
+                                }
+                        }
+
+                          $(totalTeams).append(
+                                "<p> Total: " + parsed.length + " Teams</p>" +
+                                "<p> Total Disbanded: " +  disbanded + " Teams </p>" +
+                                "<p> Total Active: " + (parsed.length - disbanded) + " Teams</p>" +
+                                "<p> Missing Active:  " + (parsed.length- count- disbanded) + " Teams</p>"
+                                );
+                          var pie = new RGraph.Pie('submittedStatus', [count, parsed.length-count-disbanded])
+                          .Set('strokestyle', 'white')
+                          .Set('colors', ['#DDDF0D','#7798BF'])
+                          .Set('linewidth', 3)
+                          .Set('exploded', [15])
+                          .Set('shadow', true)
+                          .Set('shadow.offsetx', 0)
+                          .Set('shadow.offsety', 0)
+                          .Set('shadow.blur', 20)
+                          .Set('labels', ['Submitted', 'Missing'])
+                          .Set('labels.sticks', [true])
+                          .Set('labels.sticks.length', 20)
+                          .Draw()
+
+                          return count;
+                    };
+                    function barGraphBusiness (data, quarter){
+                        $("#businessCountBar").empty();
+                        var businesses = new Array();
+                        var businessCount = new Array();
+                        var businessSubmitted = new Array();
+
+                        for(i=0; i < data.length; i++){
+
+                            if( $.inArray(data[i].business, businesses) == -1){
+                                businesses[businesses.length] = data[i].business;
+                            }
+                        }
+                        for(i = 0; i < businesses.length; i++){
+                            businessCount[i] = 0;
+                            businessSubmitted[i] = 0;
+                        }
+                        for(i=0; i < data.length; i++){
+                            for(j=0; j < businesses.length; j++){
+                                if(data[i].business == businesses[j] && data[i].disbanded != true){
+                                    businessCount[j]++; 
+                                    for(k=0; k < data[i].surveys.length; k++){
+                                        if(data[i].surveys[k].quarter == quarter){
+                                            businessSubmitted[j]++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        var businessMissing = new Array();
+                        for(i = 0; i < businessCount.length; i++){
+                           // if(data[i].disbanded != true){
+                                businessMissing[i] = new Array(2);
+                                businessMissing[i][0] = businessCount[i] - (businessCount[i] - businessSubmitted[i]);
+                                businessMissing[i][1] = businessCount[i] - businessSubmitted[i];
+                            //}
+                        }
+                        console.log(businessMissing)
+                        if(businesses.length < 4){
+                            $("#businessCountBar").append("<canvas id='businessCount' width='480' height='"+"100"+"'> </canvas>");
+
+                        } else {
+                            $("#businessCountBar").append("<canvas id='businessCount' width='480' height='"+((businesses.length+1) * 30)+"'> </canvas>");
+
+                        }
+
+                            var businessBar = new RGraph.HBar('businessCount', businessMissing)
+                                .Set('colors', ['#35A0DA', 'red'])
+                                .Set('grouping', 'stacked')
+                                .Set('labels', businesses)
+                                .Set('strokestyle', 'transparent')
+                                .Set('ylabels.count', businesses.length)
+                                .Set('numyticks', businesses.length)
+                                .Set('background.grid.autofit.numhlines', businesses.length)
+                                .Set('background.grid.vlines', false)
+                                .Set('background.grid.border', false)
+                                .Set('hmargin', businesses.length)
+                            
+                            businessBar.Draw()
+                    };
+                    function barGraphSite (data, quarter){
+                        $(siteCountBar).empty();
+                        var sites = new Array();
+                        var siteCount = new Array();
+                        var siteSubmitted = new Array();
+
+                        for(i=0; i < data.length; i++){
+
+                            if( $.inArray(data[i].site, sites) == -1){
+                                sites[sites.length] = data[i].site;
+                            }
+                        }
+                        for(i = 0; i < sites.length; i++){
+                            siteCount[i] = 0;
+                            siteSubmitted[i] = 0;
+                        }
+                        for(i=0; i < data.length; i++){
+                            for(j=0; j < sites.length; j++){
+                                if(data[i].site == sites[j] && data[i].disbanded != true){
+                                    siteCount[j] = siteCount[j] + 1; 
+                                    for(k=0; k < data[i].surveys.length; k++){
+                                        if(data[i].surveys[k].quarter == quarter){
+                                            siteSubmitted[j] = siteSubmitted[j]+1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        var siteMissing = new Array();
+                        for(i = 0; i < siteCount.length; i++){
+                            siteMissing[i] = new Array(2);
+                            siteMissing[i][0] = siteCount[i] - (siteCount[i] - siteSubmitted[i]);
+                            siteMissing[i][1] = siteCount[i] - siteSubmitted[i];
+                        }
+
+                        if(sites.length < 4){
+                            $("#siteCountBar").append("<canvas id='siteCount' width='480' height='"+"100"+"'> </canvas>");
+
+                        } else {
+                            $("#siteCountBar").append("<canvas id='siteCount' width='480' height='"+((sites.length+1) * 30)+"'> </canvas>");
+
+                        }
+
+
+                            var siteBar = new RGraph.HBar('siteCount', siteMissing)
+                                .Set('colors', ['#35A0DA', 'red'])
+                                .Set('grouping', 'stacked')
+                                .Set('labels', sites)
+                                .Set('strokestyle', 'transparent')
+                                .Set('ylabels.count', sites.length)
+                                .Set('numyticks', sites.length)
+                                .Set('background.grid.autofit.numhlines', sites.length)
+                                .Set('background.grid.vlines', false)
+                                .Set('background.grid.border', false)
+                                .Set('hmargin', sites.length)
+                            siteBar.Draw()
+                    };
+                    function generateGraphAndTable(){
+                        generateGraphs(parsed, $("#quarterSelect").val());
+                        barGraphBusiness(parsed, $("#quarterSelect").val());
+                        barGraphSite(parsed, $("#quarterSelect").val());
+                    }
+                    function initialize(){
+                        var quarterArray = new Array();
+                        for(i=0; i<parsed.length; i++){
+                            for(j=0; j<parsed[i].surveys.length; j++){
+                                if($.inArray(parsed[i].surveys[j].quarter, quarterArray) == -1){
+                                    quarterArray[quarterArray.length] = parsed[i].surveys[j].quarter;
+                                }
+                            }
+                        }
+                        for(i=0; i< quarterArray.length; i++){
+                            $("#quarterSelect").append("<option value='" + quarterArray[i] + "'>" + quarterArray[i] + "</option>");
+                        }
+
+                        generateGraphAndTable();
+                    }
+
+                    $("#quarterSelect").change(function(){
+                        generateGraphAndTable();
+                    });
+
+                    initialize();
+                }
+            });
+            };
+
+    .jumbotron.subhead(style="padding-top: 80px")
+        .container
+            h2 Submission Status of Scorecards
+
+    .row-fluid
+        .container
+            div.page-header
+                h3
+            div.offset2
+                form.form-horizontal
+                    .control-group
+                        label.control-label Select quarter
+                        .controls
+                            select.span6#quarterSelect
+
+        .container
+            .span6
+                div.page-header 
+                    h3 Submitted status
+                div#submittedStatusPie
+                    canvas#submittedStatus(width='480', height='300') [No canvas support]
+                       
+
+            .span6
+                div.page-header 
+                    h3 Teams
+                p#totalTeams
+                table.table.table-hover
+                    thead
+                        tr
+                            th Team Name
+                            th Business
+                            th Site 
+                            th ScrumMaster
+                            th Product Owner
+                    tbody#missing
+                table.table.table-hover
+                    thead
+                        tr
+                            th Team Name
+                            th Business
+                            th Site 
+                            th ScrumMaster
+                            th Product Owner
+                    tbody#missingDisbanded             
+
+        .container
+            .span6
+                div.page-header
+                    By Business
+                div#businessCountBar
+            .span6
+                div.page-header
+                    By Site
+                div#siteCountBar
+
+

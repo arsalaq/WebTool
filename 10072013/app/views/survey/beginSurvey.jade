@@ -1,0 +1,128 @@
+extends ../layout
+
+block content
+  script(src='../lib/angular/angular.js')
+  script(src='../js/controllers.js')
+  script.
+    window.onload = function(){
+      $("#Disbanded").click(function(){
+        if($("#teamName").val() == "Create new team" || $("#teamName").val() == ""){
+          alert("You cannot disband a team that does not exist!")
+        } else {
+          $.ajax({
+            url: '/surveys/change/markDisbanded',
+            type: 'put',
+            contentType: 'application/json',
+            data: JSON.stringify({
+              "placeholder": $("#id").val(),
+              "disbanded": true
+          }),
+            success: function(response){
+              alert('This team has successfully been marked as disbanded!');
+              window.location= '/data/team/' + $("#teamName").val();  
+            }
+          })
+        }
+      })
+      $("#createOrSaveTeam").click(function(){
+        if($("#teamName").val() == ''){
+          alert('There seems to be something wrong with your submission - Please try again!')
+        } else {
+          document.forms["myForm"].action='/surveys/add/' + $("#teamName").val();
+          document.forms["myForm"].submit();
+        }
+
+      })
+
+    }
+  .jumbotron.subhead(style="padding-top: 80px")
+      .container
+          h2 Begin Survey
+  div(ng-app, style='margin-top: 40px;')
+    .container-fluid(ng-controller='TeamListCtrl')
+      .row-fluid
+        .span8.offset2
+          form.form-horizontal(name="myForm", method="POST")
+            legend Create new team or choose from existing
+            .control-group
+              label.control-label(for='select team') Select team
+              .controls
+                .nullable
+                  select.span8#existingTeamName(ng-model='selection', ng-options='team.teamName for team in teams')
+            .control-group
+              label.control-label(for='TeamName') ID
+              .controls
+                input#id(value='{{selection._id}}', type='text', placeholder='', name="placeholder", ng-disabled='disabled')
+            .control-group
+              label.control-label(for='TeamName') Team Name
+              .controls
+                input#teamName(value='{{selection.teamName}}', type='text', placeholder='Optimus', name="teamName", required)
+                span.help-block ex: Transformers
+            .control-group
+              label.control-label(for='business') Business
+              .controls
+                input#business(value='{{selection.business}}', type='text', placeholder='business', name="business", required)
+                span.help-block ex: CBS
+            .control-group
+              label.control-label(for='subBusiness') Sub-business
+              .controls
+                input#subBusiness(value='{{selection.subBusiness}}', type='text', placeholder='Sub-business', name="subBusiness", required)
+                span.help-block ex: Sub-business Name
+            .control-group
+              label.control-label(for='site') Site
+              .controls
+                input#site(value='{{selection.site}}', type='text', placeholder='eg: Barrington', name="site", required)
+                span.help-block ex: Barrington
+            .control-group
+              label.control-label(for='scrumMaster') Scrum Master
+              .controls.row-fluid
+                input#scrumMasterFirst(value='{{selection.scrumMaster.first}}', style='margin-bottom: 10px; margin-right: 10px', type='text', placeholder='First Name', name="scrumMaster[first]", required)
+                input#scrumMasterLast(value='{{selection.scrumMaster.last}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='Last Name', name="scrumMaster[last]", required)
+                input#scrumMasterSSO(value='{{selection.scrumMaster.SSO}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='SSO Number | Ex: 212326355', name="scrumMaster[SSO]", required)
+            .control-group
+              label.control-label(for='productOwner') Product Owner
+              .controls.row-fluid
+                input(value='{{selection.productOwner.first}}', style='margin-bottom: 10px; margin-right: 10px', type='text', placeholder='First Name', name="productOwner[first]", required)
+                input(value='{{selection.productOwner.last}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='Last Name', name="productOwner[last]", required)
+                input(value='{{selection.productOwner.SSO}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='SSO Number | Ex: 212326355', name="productOwner[SSO]", required)
+            .control-group
+              label.control-label(for='interactionDesigner') Interation Designer
+              .controls.row-fluid
+                input(value='{{selection.interactionDesigner.first}}', style='margin-bottom: 10px; margin-right: 10px', type='text', placeholder='First Name', name="interactionDesigner[first]", required)
+                input(value='{{selection.interactionDesigner.last}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='Last Name', name="interactionDesigner[last]", required)
+                input(value='{{selection.interactionDesigner.SSO}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='SSO Number | Ex: 212326355', name="interactionDesigner[SSO]", required)
+            .control-group
+              label.control-label(for='qualityEngineer') Quality Engineer
+              .controls.row-fluid
+                input(value='{{selection.qualityEngineer.first}}', style='margin-bottom: 10px; margin-right: 10px', type='text', placeholder='First Name', name="qualityEngineer[first]", required)
+                input(value='{{selection.qualityEngineer.last}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='Last Name', name="qualityEngineer[last]", required)
+                input(value='{{selection.qualityEngineer.SSO}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='SSO Number | Ex: 212326355', name="qualityEngineer[SSO]", required)
+            .control-group
+              label.control-label(for='architect') Architect
+              .controls.row-fluid
+                input(value='{{selection.architect.first}}', style='margin-bottom: 10px; margin-right: 10px', type='text', placeholder='First Name', name="architect[first]", required)
+                input(value='{{selection.architect.last}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='Last Name', name="architect[last]", required)
+                input(value='{{selection.architect.SSO}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='SSO Number | Ex: 212326355', name="architect[SSO]", required)
+            .control-group
+              label.control-label(for='teamMembers') Team Members
+              .controls.row-fluid#teamMembers(ng-repeat='member in selection.teamMembers')
+                input#teamMemberFirst(value='{{member.first}}', style='margin-bottom: 10px; margin-right: 10px', type='text', placeholder='First Name', name="teamMembers[first]", required)
+                input(value='{{member.last}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='Last Name', name="teamMembers[last]", required)
+                input(value='{{member.SSO}}', style='margin-bottom: 10px; margin-right: 10px',type='text', placeholder='SSO Number | Ex: 212326355', name="teamMembers[SSO]", required)
+                a(href, ng-click='selection.teamMembers.splice($index, 1)') [ Remove ]
+              .controls.row-fluid#teamMembersAdd
+                a#addTeamMember(href, ng-click='selection.teamMembers.push({})') [ Add another Team Member ]
+            .control-group
+              .controls
+                button.btn.btn-block.btn-large.btn-success(type='button', id='createOrSaveTeam') Save changes and add survey
+                button.btn.btn-danger.btn-block.btn-large(href='#myModal', role='button', data-toggle='modal') Mark Team as disbanded 
+        .container 
+          #myModal.modal.hide.fade(tabindex='-1', role='dialog', aria-labelledby='myModalLabel', aria-hidden='true')
+            .modal-header
+                button.close(type='button', data-dismiss='modal', aria-hidden='true')
+                h3#myModalLabel Confirm Request
+              .modal-body
+                p Are you sure you want to mark {{selection.teamName}} as disbanded?
+              .modal-footer
+                button.btn(data-dismiss='modal', aria-hidden='true') Close
+                button.btn.btn-danger(type='button', id="Disbanded") Mark Team as Disbanded          

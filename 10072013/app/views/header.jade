@@ -1,0 +1,26 @@
+div.navbar.navbar-inverse.navbar-fixed-top
+    div.navbar-inner
+        div.container
+            a.btn.btn-navbar(data-toggle="collapse", data-target=".nav-collapse")
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+            a.brand(href="#")
+                | Agile Scorecard
+            div.nav-collapse.collapse
+                ul.nav
+                    li
+                        a(href="/surveys") Teams
+                    li 
+                        a(href="/surveys/add") Add Survey
+                        li.divider-vertical
+                    li 
+                      a(href='/data/submissionStatus') Submission Status
+                    li
+                      a(href='/data/quarterAnalysis') Quarters
+                    li
+                      a(href='/data/questionAnalysis') Questions
+                    // li
+                    //   a(href='/team/issues') Tool Issues
+                    // li
+                    //   a(href='/data/overallAnalysis') Overall 

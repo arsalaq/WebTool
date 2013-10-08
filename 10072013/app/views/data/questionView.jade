@@ -1,0 +1,320 @@
+extends ../layout 
+
+block content
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.core.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.key.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.effects.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.tooltips.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.common.dynamic.js')
+    script(type='text/javascript', src='/libraries/RGraph/RGraph.hbar.js')
+    script(type='text/javascript', src='/javascripts/excanvas.js')
+    script(type='text/javascript', src='/javascripts/jquery.tablesorter.min.js')
+    script(type='text/javascript', src='/javascripts/jquery.tablesorter.min.js')
+    script(src='/lib/angular/angular.js')
+    script(src='/js/controllers.js')
+    style(type='text/css')
+        .width {
+            border: 1px solid green;
+            display: table-cell;
+            width: 100%;
+            }
+        table.tablesorter {
+            text-align: left;
+        }
+        table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+        }
+        table.tablesorter thead tr .header {
+            background-image: url(/stylesheets/bg.gif);
+            background-repeat: no-repeat;
+            background-position: center right;
+            cursor: pointer;
+        }
+        table.tablesorter tbody td {
+            color: #3D3D3D;
+            background-color: #FFF;
+        }
+
+        table.tablesorter thead tr .headerSortUp {
+            background-image: url(/stylesheets/asc.gif);
+        }
+        table.tablesorter thead tr .headerSortDown {
+            background-image: url(/stylesheets/desc.gif);
+        }
+        table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+        }
+    script
+        window.onload = function ()
+            {
+            $.ajax({
+                url: '/JSON/allTeams',
+                success: function(data, textStatus, jqXHR){
+                    var res = jqXHR.responseText;
+                    var parsed = $.parseJSON(res).data;
+
+                    var questionArray = new Array();
+                    var quarterArray = new Array();
+                    var countArray = new Array();
+                    var optionArray = new Array();
+                    var resultCountVal;
+                    var resultTotalVal;
+
+                    function initialize(){
+                        questionArray = [
+                            "Team size ten or fewer",
+                            "Scrum master supports two or fewer teams",
+                            "Scrum master dedicated role (full time as a scrum master)",
+                            "Product owner supports three or fewer teams",
+                            "Product owner local and easily available for meetings and conversations",
+                            "Quality engineer local and easily available for meetings and conversations",
+                            "Interaction designer (UX) local and easily available for meetings and conversations",
+                            "Architect local and easily available for meetings and conversations",
+                            "Developers only on one team",
+                            "Testers only on one team",
+                            "Same time zone",
+                            "Same office building",
+                            "Same area of office",
+                            "Shared team space",
+                            "Physical scrum board",
+                            "team Wiki",
+                            "Meeting area easily available",
+                            "Pairing stations easily available",
+                            "Whiteboards easily available",
+                            "Projector easily available",
+                            "Vision",
+                            "Product data sheet",
+                            "Roadmap",
+                            "Revenue trend",
+                            "Personas",
+                            "User workflow/context scenario list",
+                            "Architecture block diagram",
+                            "Architecture sequence diagram",
+                            "Agile scorecard",
+                            "Metric trends",
+                            "Backlog grooming meeting every sprint",
+                            "Sprint planning meeting fast and effective",
+                            "Daily stand-up meetings fast and effective",
+                            "Demo/review meeting effective and focused on showing product",
+                            "Retrospective meeting varied and effective - follow through on improvements",
+                            "Two week sprints",
+                            "Quarterly release trains",
+                            "Scrum of scrums effective managing dependencies (or only one team)",
+                            "Definition of Ready (before sprint planning) checklist posted and used",
+                            "Definition of Done checklist posted and used",
+                            "Story name follows conventions",
+                            "Spike considered",
+                            "Independent (of other stories and teams)",
+                            "Negotiable",
+                            "Valuable (to end user preferably - PO understands and accepts value)",
+                            "Estimated (relative story points assigned by whole team)",
+                            "Small (enable continuous flow of stories closing 6-10 per sprint)",
+                            "Testable (acceptance criteria documented and failure modes considered)",
+                            "Prioritized",
+                            "UX complete if applicable (wireframes/mock-ups/screens)",
+                            "Verification dry run",
+                            "Validation dry run, including formative usability testing",
+                            "Automated unit tests",
+                            "TDD",
+                            "Automated acceptance/regression tests",
+                            "BDD",
+                            "All bugs associated with the story closed",
+                            "User documentation complete",
+                            "QMS design documents content updated",
+                            "User/customer feedback",
+                            "Verification dry run",
+                            "Validation dry run, including formative usability testing",
+                            "Automated unit tests",
+                            "TDD",
+                            "Automated acceptance/regression tests",
+                            "BDD",
+                            "All bugs associated with the story closed",
+                            "User documentation complete",
+                            "QMS design documents content updated",
+                            "User/customer feedback",
+                            "Build triggered",
+                            "Install generated",
+                            "Unit tests run",
+                            "Smoke test run",
+                            "Acceptance/regression tests run",
+                            "Static code analysis run",
+                            "Results recorded",
+                            "Team notified of breaks through email",
+                            "Team notified of breaks through dashboard or ambient tech",
+                            "Gated check-in (if any step fails, the change is rejected)"
+                        ];
+                        countArray = [
+                            "one",
+                            "two",
+                            "three",
+                            "four",
+                            "five",
+                            "six",
+                            "seven",
+                            "eight",
+                            "nine",
+                            "ten"
+                        ];
+                        optionArray = [
+                            "team",
+                            "environment",
+                            "informationRadiators",
+                            "process",
+                            "definitionOfReady",
+                            "definitionOfDone",
+                            "qualityMetrics",
+                            "continuousIntegration",
+                        ];
+
+                        for(i=0; i < questionArray.length; i++){
+                            $('#questionSelect').append("<option value='" + questionArray[i] +"'> " + questionArray[i] + "</option>");
+                        }
+                        for(i=0; i<parsed.length; i++){
+                            for(j=0; j<parsed[i].surveys.length; j++){
+                                if($.inArray(parsed[i].surveys[j].quarter, quarterArray) == -1){
+                                    quarterArray[quarterArray.length] = parsed[i].surveys[j].quarter;
+                                }
+                            }
+                        }
+                        for(i=0; i< quarterArray.length; i++){
+                            $("#quarterSelect").append("<option value='" + quarterArray[i] + "'>" + quarterArray[i] + "</option>");
+                        }
+                        generateTableByQuestionAndQuarter($("#questionSelect").val(), $("#quarterSelect").val())
+                    }
+                    function generateTableByQuestionAndQuarter (question, quarter){
+                        $("#sorterReset").empty();
+                        $("#sorterReset").append("<table class='tablesorter table table-hover' id='results'>"
+                            + "<thead> <tr> <th style='padding-right: 20px;'> Response </th>  <th style='padding-right: 20px;'> Team </th><th style='padding-right: 20px;'> Business </th> <th style='padding-right: 20px;'> Location </th> <th style='padding-right: 20px;'> Current Product </th> <th style='padding-right: 20px;'> Current Project </th></tr>"
+                            + "<tbody id='questionTableBody'> </tbody>"
+                            + "</table>");
+
+                        $("#questionTableBody").empty();
+                        resultCountVal = 0;
+                        resultTotalVal = 0;
+
+                        var k = questionArray.indexOf(question);
+                        for(i=0; i<parsed.length; i++){
+                            for(j=0; j<parsed[i].surveys.length; j++){
+                                if((parsed[i].surveys[j][optionArray[Math.floor(k/10)]][k%10] == 1) 
+                                        && (parsed[i].surveys[j].quarter == quarter) ){
+                                    resultCountVal++;
+                                    $('#questionTableBody').append(
+                                        "<tr class='success'><td>Yes" +
+                                        "</td><td><a href='/data/team/" + 
+                                            parsed[i].teamName + "'>" +
+                                            parsed[i].teamName +
+                                        "</td><td>" + 
+                                            parsed[i].business + 
+                                        "</td><td>" + 
+                                            parsed[i].site +
+                                        "</td><td>" + 
+                                            parsed[i].surveys[j].currentProduct +
+                                        "</td><td>" + 
+                                            parsed[i].surveys[j].currentProject +
+                                        "</td></tr>"
+                                        );
+
+                                } else if(parsed[i].surveys[j].quarter == quarter){
+                                    $('#questionTableBody').append(
+                                        "<tr><td>" +
+                                            "No" + 
+                                        "</td><td><a href='/data/team/" +  
+                                            parsed[i].teamName + "'>" +
+                                            parsed[i].teamName +
+                                        "</td><td>" + 
+                                            parsed[i].business + 
+                                        "</td><td>" + 
+                                            parsed[i].site +
+                                        "</td><td>" + 
+                                            parsed[i].surveys[j].currentProduct +
+                                        "</td><td>" + 
+                                            parsed[i].surveys[j].currentProject +
+                                        "</td></tr>"
+                                        );
+                                }
+                            } 
+                        }
+                        for(i=0; i<parsed.length; i++){
+                            for(j=0; j<parsed[i].surveys.length; j++){
+                                if(parsed[i].surveys[j].quarter == quarter){
+                                    resultTotalVal++;
+                                }
+                            }
+                        }
+                        $("#resultCount").empty();
+                        $("#resultCount").append(
+                            "<p class='marketing-byline'> " + 
+                            resultCountVal + 
+                            " out of the " +
+                            resultTotalVal + 
+                            " submissions for " + 
+                            quarter + 
+                            " said yes for: " +
+                            question + 
+                            "</p>"
+                            ); 
+                        $("#results").tablesorter( {sortList: [[0,0], [1,0]]} ); 
+
+                    }
+
+                    initialize();
+
+                    $("#questionSelect").change(function(){
+                        $("#sorterReset").empty();
+                        $("#sorterReset").append("<table class='tablesorter table table-hover' id='results'>"
+                            + "<thead> <tr> <th style='padding-right: 20px;'> Response </th> <th style='padding-right: 20px;'> Team </th><th style='padding-right: 20px;'> Business </th> <th style='padding-right: 20px;'> Location </th> <th style='padding-right: 20px;'> Current Product </th> <th style='padding-right: 20px;'> Current Project </th></tr>"
+                            + "<tbody id='questionTableBody'> </tbody>"
+                            + "</table>");
+                        generateTableByQuestionAndQuarter($("#questionSelect").val(), $("#quarterSelect").val())
+                        $("#results").tablesorter( {sortList: [[0,0], [1,0]]} ); 
+                    })
+                    $("#quarterSelect").change(function(){
+                        $("#sorterReset").empty();
+                        $("#sorterReset").append("<table class='tablesorter table table-hover' id='results'>"
+                            + "<thead> <tr> <th style='padding-right: 20px;'> Response </th> <th style='padding-right: 20px;'> Team </th><th style='padding-right: 20px;'> Business </th> <th style='padding-right: 20px;'> Location </th> <th style='padding-right: 20px;'> Current Product </th> <th style='padding-right: 20px;'> Current Project </th></tr>"
+                            + "<tbody id='questionTableBody'> </tbody>"
+                            + "</table>");
+                        generateTableByQuestionAndQuarter($("#questionSelect").val(), $("#quarterSelect").val())
+                        $("#results").tablesorter( {sortList: [[0,0], [1,0]]} ); 
+
+                    })                  
+                }
+            });
+        }
+
+
+    .jumbotron.subhead(style="padding-top: 80px")
+        .container
+            h2 Question Analysis
+
+    .row-fluid(ng-app, ng-controller='TeamListCtrl')
+        .container
+            div.page-header
+                h3
+            div.offset2
+                form.form-horizontal
+                    .control-group
+                        label.control-label Select Quarter
+                        .controls
+                            select.span6#quarterSelect
+
+            div.offset1
+                form.form-horizontal
+                    .control-group
+                        label.control-label Select Question
+                        .controls
+                            select.span9#questionSelect
+        .container
+            .marketing#resultCount
+        .container
+            .row-fluid
+                .span12
+                    #sorterReset
+                        table.tablesorter.table.table-hover#results
+                            thead 
+                                tr 
+                                    th Response
+                                    th Team
+                                    th Business
+                                    th Location
+                                    th Current Product
+                                    th Current Project
+                            tbody#questionTableBody
